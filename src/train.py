@@ -120,8 +120,8 @@ if __name__ == "__main__":
 
     checkpoint_path = args['--checkpoint']
     checkpoint = None
-    
-    if checkpoint_path is not None:
+
+    if len(checkpoint_path) > 0:
         checkpoint = torch.load(checkpoint_path)
         generator.load_state_dict(checkpoint['generator_model_state_dict'])
         image_discriminator.load_state_dict(checkpoint['image_discriminator_model_state_dict'])
