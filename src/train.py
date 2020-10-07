@@ -9,6 +9,7 @@ Usage:
     train.py [options] <dataset> <log_folder>
 
 Options:
+    --checkpoint=<path>             specifies a checkpoint file for continuing to train previous model [default: ]
     --image_dataset=<path>          specifies a separate dataset to train for images [default: ]
     --image_batch=<count>           number of images in image batch [default: 10]
     --video_batch=<count>           number of videos in video batch [default: 3]
@@ -117,6 +118,15 @@ if __name__ == "__main__":
                                               n_channels=n_channels, use_noise=args['--use_noise'],
                                               noise_sigma=float(args['--noise_sigma']))
 
+    checkpoint_path = args['--checkpoint']
+    checkpoint = None
+    
+    if checkpoint_path is not None:
+        checkpoint = torch.load(checkpoint_path)
+        generator.load_state_dict(checkpoint['generator_model_state_dict'])
+        image_discriminator.load_state_dict(checkpoint['image_discriminator_model_state_dict'])
+        video_discriminator.load_state_dict(checkpoint['video_discriminator_model_state_dict'])
+
     if torch.cuda.is_available():
         generator.cuda()
         image_discriminator.cuda()
@@ -130,4 +140,4 @@ if __name__ == "__main__":
                       use_infogan=args['--use_infogan'],
                       use_categories=args['--use_categories'])
 
-    trainer.train(generator, image_discriminator, video_discriminator)
+    trainer.train(generator, image_discriminator, video_discriminator, checkpoint)

@@ -19,6 +19,7 @@ class Logger(object):
 
     def scalar_summary(self, tag, value, step):
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
+        # summary = tf.summary.scalar(tag, value)
         self.writer.add_summary(summary, step)
 
     def image_summary(self, tag, images, step):

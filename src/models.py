@@ -226,7 +226,7 @@ class VideoGenerator(nn.Module):
 
         z_m_t = [h_k.view(-1, 1, self.dim_z_motion) for h_k in h_t]
         z_m = torch.cat(z_m_t[1:], dim=1).view(-1, self.dim_z_motion)
-
+        #nun_samples x vlen, dim_z_motion
         return z_m
 
     def sample_z_categ(self, num_samples, video_len):
@@ -238,8 +238,9 @@ class VideoGenerator(nn.Module):
         classes_to_generate = np.random.randint(self.dim_z_category, size=num_samples)
         one_hot = np.zeros((num_samples, self.dim_z_category), dtype=np.float32)
         one_hot[np.arange(num_samples), classes_to_generate] = 1
+        # num_samples, dim_z_category
         one_hot_video = np.repeat(one_hot, video_len, axis=0)
-
+        # num_samples x video_len, dim_z_category
         one_hot_video = torch.from_numpy(one_hot_video)
 
         if torch.cuda.is_available():
@@ -251,7 +252,9 @@ class VideoGenerator(nn.Module):
         video_len = video_len if video_len is not None else self.video_length
 
         content = np.random.normal(0, 1, (num_samples, self.dim_z_content)).astype(np.float32)
+        # num_samples, dim_z_content
         content = np.repeat(content, video_len, axis=0)
+        # num_samples x video_len, dim_z_content
         content = torch.from_numpy(content)
         if torch.cuda.is_available():
             content = content.cuda()
@@ -267,6 +270,8 @@ class VideoGenerator(nn.Module):
         else:
             z = torch.cat([z_content, z_motion], dim=1)
 
+        # num_samples x video_len, dim_z_content + dim_z_category + dim_z_motion
+        # num_samples
         return z, z_category_labels
 
     def sample_videos(self, num_samples, video_len=None):
@@ -275,6 +280,8 @@ class VideoGenerator(nn.Module):
         z, z_category_labels = self.sample_z_video(num_samples, video_len)
 
         h = self.main(z.view(z.size(0), z.size(1), 1, 1))
+
+        # num_samples
         h = h.view(math.floor(h.size(0) / video_len), video_len, self.n_channels, h.size(3), h.size(3))
 
         z_category_labels = torch.from_numpy(z_category_labels)
@@ -283,6 +290,7 @@ class VideoGenerator(nn.Module):
             z_category_labels = z_category_labels.cuda()
 
         h = h.permute(0, 2, 1, 3, 4)
+        # num_samples, n_channels, video_len, W, H
         return h, Variable(z_category_labels, requires_grad=False)
 
     def sample_images(self, num_samples):
@@ -291,6 +299,7 @@ class VideoGenerator(nn.Module):
         j = np.sort(np.random.choice(z.size(0), num_samples, replace=False)).astype(np.int64)
         z = z[j, ::]
         z = z.view(z.size(0), z.size(1), 1, 1)
+        # num_samples,  n_channels x W x H
         h = self.main(z)
 
         return h, None

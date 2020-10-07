@@ -27,6 +27,9 @@ from trainers import videos_to_numpy
 
 import subprocess as sp
 
+import signal
+def default_sigpipe():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def save_video(ffmpeg, video, filename):
     command = [ffmpeg,
@@ -41,9 +44,13 @@ def save_video(ffmpeg, video, filename):
                '-q:v', '3',
                '-an',
                filename]
+    print (len(video.tostring()))
 
-    pipe = sp.Popen(command, stdin=sp.PIPE, stderr=sp.PIPE)
+    pipe = sp.Popen(command, stdin=sp.PIPE)
+    # pipe.communicate('\n'.join(video.tostring()))
     pipe.stdin.write(video.tostring())
+    pipe.stdin.close()
+    pipe.wait()
 
 
 if __name__ == "__main__":
@@ -56,8 +63,9 @@ if __name__ == "__main__":
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-
+    # num_videos = 1
     for i in range(num_videos):
         v, _ = generator.sample_videos(1, int(args['--number_of_frames']))
         video = videos_to_numpy(v).squeeze().transpose((1, 2, 3, 0))
+        print('length: ', len(video))
         save_video(args["--ffmpeg"], video, os.path.join(output_folder, "{}.{}".format(i, args['--output_format'])))

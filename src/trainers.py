@@ -217,13 +217,14 @@ class Trainer(object):
 
         return l_generator
 
-    def train(self, generator, image_discriminator, video_discriminator):
+    def train(self, generator, image_discriminator, video_discriminator, checkpoint = None):
         if self.use_cuda:
             generator.cuda()
             image_discriminator.cuda()
             video_discriminator.cuda()
 
         logger = Logger(self.log_folder)
+        batch_num = 0
 
         # create optimizers
         opt_generator = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999), weight_decay=0.00001)
@@ -231,6 +232,16 @@ class Trainer(object):
                                              weight_decay=0.00001)
         opt_video_discriminator = optim.Adam(video_discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999),
                                              weight_decay=0.00001)
+        if checkpoint is not None:
+            print ('Checkpoint existed')
+            opt_generator.load_state_dict(checkpoint['generator_optimizer_state_dict'])
+            opt_image_discriminator.load_state_dict(checkpoint['image_discriminator_optimizer_state_dict'])
+            opt_video_discriminator.load_state_dict(checkpoint['video_discriminator_optimizer_state_dict'])
+            batch_num = checkpoint['batch_num']
+
+            if batch_num > 0:
+                self.sample_real_image_batch()
+                self.sample_real_video_batch()
 
         # training loop
 
@@ -243,7 +254,7 @@ class Trainer(object):
         def init_logs():
             return {'l_gen': 0, 'l_image_dis': 0, 'l_video_dis': 0}
 
-        batch_num = 0
+        
 
         logs = init_logs()
 
@@ -310,6 +321,20 @@ class Trainer(object):
                 # logger.video_summary("Videos", videos_to_numpy(videos), batch_num)
 
                 torch.save(generator, os.path.join(self.log_folder, 'generator_%05d.pytorch' % batch_num))
+
+                torch.save({
+                    'batch_num': batch_num,
+                    'generator_model_state_dict': generator.state_dict(),
+                    'generator_optimizer_state_dict': opt_generator.state_dict(),
+                    'image_discriminator_model_state_dict': image_discriminator.state_dict(),
+                    'image_discriminator_optimizer_state_dict': opt_image_discriminator.state_dict(),
+                    'video_discriminator_model_state_dict': video_discriminator.state_dict(),
+                    'video_discriminator_optimizer_state_dict': opt_video_discriminator.state_dict()
+                    }, os.path.join(self.log_folder, 'mocogan_model_%05d.tar' % batch_num))
+
+                
+
+
 
             if batch_num >= self.train_batches:
                 torch.save(generator, os.path.join(self.log_folder, 'generator_%05d.pytorch' % batch_num))
