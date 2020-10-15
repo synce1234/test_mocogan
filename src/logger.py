@@ -19,8 +19,8 @@ class Logger(object):
 
     def scalar_summary(self, tag, value, step):
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
-        # summary = tf.summary.scalar(tag, value)
-        self.writer.add_summary(summary, step)
+        tf.summary.scalar(tag, data=value, step=step)
+        # self.writer.add_summary(summary, step)
 
     def image_summary(self, tag, images, step):
 
@@ -31,18 +31,20 @@ class Logger(object):
                 s = StringIO()
             except:
                 s = BytesIO()
-            scipy.misc.toimage(img).save(s, format="png")
+            # scipy.misc.toimage(img).save(s, format="png")
 
             # Create an Image object
-            img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
-                                       height=img.shape[0],
-                                       width=img.shape[1])
+            # img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
+            #                            height=img.shape[0],
+            #                            width=img.shape[1])
             # Create a Summary value
-            img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
-        summary = tf.Summary(value=img_summaries)
-        self.writer.add_summary(summary, step)
+        # summary = tf.Summary(value=img_summaries)
+        # self.writer.add_summary(summary, step)
+        # tf.summary.image()
         self.writer.flush()
 
     def video_summary(self, tag, videos, step):
@@ -65,16 +67,17 @@ class Logger(object):
             v = [np.squeeze(f) for f in np.split(v, v.shape[0], axis=0)]
             img = np.concatenate(v, axis=1)[:, :-1, :]
 
-            scipy.misc.toimage(img).save(s, format="png")
+            # scipy.misc.toimage(img).save(s, format="png")
 
             # Create an Image object
-            img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
-                                       height=img.shape[0],
-                                       width=img.shape[1])
+            # img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
+            #                            height=img.shape[0],
+            #                            width=img.shape[1])
             # Create a Summary value
-            img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
-        summary = tf.Summary(value=img_summaries)
-        self.writer.add_summary(summary, step)
+        # summary = tf.Summary(value=img_summaries)
+        # self.writer.add_summary(summary, step)
         self.writer.flush()

@@ -309,8 +309,8 @@ class Trainer(object):
 
                 print (log_string)
 
-                # for tag, value in logs.items():
-                #     logger.scalar_summary(tag, value / self.log_interval, batch_num)
+                for tag, value in logs.items():
+                    logger.scalar_summary(tag, value / self.log_interval, batch_num)
 
                 logs = init_logs()
                 start_time = time.time()
