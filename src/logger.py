@@ -18,12 +18,15 @@ class Logger(object):
         self.writer = tf.summary.create_file_writer(log_dir, filename_suffix=suffix)
 
     def scalar_summary(self, tag, value, step):
+        value = value.cpu()
         # summary = tf.Summary(value=[tf.Summary.Value(tag=tag, simple_value=value)])
-        tf.summary.scalar(tag, data=value, step=step)
+        with self.writer.as_default():
+          tf.summary.scalar(tag, data=value, step=step)
         # self.writer.add_summary(summary, step)
 
     def image_summary(self, tag, images, step):
 
+        images = images.cpu()
         img_summaries = []
         for i, img in enumerate(images):
             # Write the image to a string
@@ -39,7 +42,8 @@ class Logger(object):
             #                            width=img.shape[1])
             # Create a Summary value
             # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
-            tf.summary.image('%s/%d' % (tag, i), img, step=step)
+            with self.writer.as_default():
+                tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
         # summary = tf.Summary(value=img_summaries)
@@ -51,6 +55,7 @@ class Logger(object):
 
         sh = list(videos.shape)
         sh[-1] = 1
+        videos = videos.cpu()
 
         separator = np.zeros(sh, dtype=videos.dtype)
         videos = np.concatenate([videos, separator], axis=-1)
@@ -75,7 +80,8 @@ class Logger(object):
             #                            width=img.shape[1])
             # Create a Summary value
             # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
-            tf.summary.image('%s/%d' % (tag, i), img, step=step)
+            with self.writer.as_default():
+                tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
         # summary = tf.Summary(value=img_summaries)
