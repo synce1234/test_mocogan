@@ -29,12 +29,14 @@ class Logger(object):
         # images = images.cpu()
         img_summaries = []
         for i, img in enumerate(images):
+            # print(img.shape)
             # Write the image to a string
             try:
                 s = StringIO()
             except:
                 s = BytesIO()
             # scipy.misc.toimage(img).save(s, format="png")
+            img = np.reshape(img, (-1, img.shape[0], img.shape[1], img.shape[2]))
 
             # Create an Image object
             # img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
@@ -43,7 +45,7 @@ class Logger(object):
             # Create a Summary value
             # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
             with self.writer.as_default():
-                tf.summary.image('%s/%d' % (tag, i), [img], step=step)
+                tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
         # summary = tf.Summary(value=img_summaries)
@@ -80,8 +82,10 @@ class Logger(object):
             #                            width=img.shape[1])
             # Create a Summary value
             # img_summaries.append(tf.Summary.Value(tag='%s/%d' % (tag, i), image=img_sum))
+            img = np.reshape(img, (-1, img.shape[0], img.shape[1], img.shape[2]))
+
             with self.writer.as_default():
-                tf.summary.image('%s/%d' % (tag, i), [img], step=step)
+                tf.summary.image('%s/%d' % (tag, i), img, step=step)
 
         # Create and write Summary
         # summary = tf.Summary(value=img_summaries)
