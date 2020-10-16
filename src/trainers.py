@@ -318,10 +318,10 @@ class Trainer(object):
                 generator.eval()
 
                 images, _ = sample_fake_image_batch(self.image_batch_size)
-                # logger.image_summary("Images", images_to_numpy(images), batch_num)
+                logger.image_summary("Images", images_to_numpy(images), batch_num)
 
                 videos, _ = sample_fake_video_batch(self.video_batch_size)
-                # logger.video_summary("Videos", videos_to_numpy(videos), batch_num)
+                logger.video_summary("Videos", videos_to_numpy(videos), batch_num)
 
                 torch.save(generator, os.path.join(self.log_folder, 'generator_%05d.pytorch' % batch_num))
                 if (batch_num % (10 * self.log_interval) == 0):

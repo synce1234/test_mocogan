@@ -1,0 +1,1 @@
+ffmpeg -y -f rawvideo -vcodec rawvideo -s 64x64 -pix_fmt rgb24 -r 8 -i - -c:v mjpeg -q:v 3 -an ./logs/shapes/0.gif
